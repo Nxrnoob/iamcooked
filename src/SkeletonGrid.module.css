@@ -1,0 +1,48 @@
+/* src/SkeletonGrid.module.css */
+@keyframes pulse {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+  width: 100%;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardImage {
+  width: 100%;
+  padding-top: 150%; /* Matches ResultsGrid */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.cardContent {
+  padding: 1rem;
+}
+
+.cardTitle {
+  width: 80%;
+  height: 2.8em; /* Matches ResultsGrid */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}

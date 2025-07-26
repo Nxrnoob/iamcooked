@@ -1,0 +1,38 @@
+/* src/Menu.module.css */
+.menu {
+  position: fixed;
+  top: 75px; /* Adjust to be just below the NavBar */
+  right: 1.5rem;
+  width: 220px;
+  background: rgba(25, 25, 25, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 0.75rem;
+  z-index: 999;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  transform-origin: top right; /* Set transform origin for scaling animation */
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.2rem;
+  color: var(--light-text);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: var(--primary-accent);
+  color: white;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.5rem 0;
+}

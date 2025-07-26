@@ -1,0 +1,62 @@
+/* src/NavBar.module.css */
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--light-text);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+@keyframes shimmer {
+  0% { background-position: -100% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.title {
+  font-family: 'Staatliches', cursive;
+  font-size: 2rem;
+  background-image: linear-gradient(
+    90deg,
+    var(--light-text) 0%,
+    var(--light-text) 40%,
+    var(--primary-accent) 50%,
+    var(--light-text) 60%,
+    var(--light-text) 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer 5s linear infinite;
+}
+
+.titleLink {
+  text-decoration: none;
+}
+
+.navButton {
+  background: none;
+  border: none;
+  color: var(--light-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.navButton:hover {
+  color: var(--primary-accent);
+  transform: scale(1.1);
+}
+
+.navButtonPlaceholder {
+  width: 1.5rem; /* Same as navButton font-size to maintain alignment */
+}
