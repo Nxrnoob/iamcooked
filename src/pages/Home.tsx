@@ -75,10 +75,10 @@ export default function Home() {
           iamcooked
         </motion.h1>
         <motion.p className={styles.subtitle} variants={subtitleVariants}>
-          Track your complete watch time for anime, series, and movies.
+          Sacrificed your sleep, youth, and GPA—now make it aesthetic.
         </motion.p>
         <motion.p className={styles.instruction} variants={subtitleVariants}>
-          Select a category to find out.
+          Let’s see which medium stole your soul , select one or more.
         </motion.p>
       </motion.div>
       <motion.div

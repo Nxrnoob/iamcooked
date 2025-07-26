@@ -135,7 +135,7 @@ const ShareCard: React.FC<ShareCardProps> = ({ items, totalTime, cardRef, bgImag
 
           <div className={styles.divider} />
           <div className={styles.footerText}>
-            Track your watch time at iamcooked.com
+            Get your card at iamcooked.nxrnoob.com
           </div>
         </div>
       </div>

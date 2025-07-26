@@ -24,7 +24,7 @@ function ResultsGrid({ items, onSelect, selectedItems }: ResultsGridProps) {
     return (
       <div className={styles.noResults}>
         <FaExclamationCircle className={styles.noResultsIcon} />
-        <p>No results found. Try a different search!</p>
+        <p>Your watchlist won’t build itself, buddy.</p>
       </div>
     );
   }

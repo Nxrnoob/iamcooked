@@ -54,7 +54,7 @@ const Search: React.FC<SearchProps> = ({ selectedItems, onSelectItem }) => {
           })));
         } else {
           setResults([]);
-          setError('No anime found.');
+          setError('404: Good taste not found. Click search again maybe??');
         }
       } else {
         url = `${OMDB_API_BASE_URL}?s=${encodeURIComponent(query)}&type=${searchType}`;
@@ -68,7 +68,7 @@ const Search: React.FC<SearchProps> = ({ selectedItems, onSelectItem }) => {
         }
       }
     } catch (err) {
-      setError('Failed to fetch results. Please try again.');
+      setError('404: Good taste not found. Click search again maybe??');
     } finally {
       setIsLoading(false);
     }
