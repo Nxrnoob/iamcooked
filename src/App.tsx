@@ -58,16 +58,16 @@ function App() {
 
     if (item.Type === 'series') {
       try {
-        const seriesDetailsRes = await fetch(`/api/omdb?i=${item.imdbID}`);
+        const seriesDetailsRes = await fetch(`/.netlify/functions/omdb?i=${item.imdbID}`);
         const seriesDetails = await seriesDetailsRes.json();
         if (seriesDetails.Response === "True") {
           newItem.Runtime = seriesDetails.Runtime;
         }
 
-        const tvmazeRes = await fetch(`/api/tvmaze/lookup/shows?imdb=${item.imdbID}`);
+        const tvmazeRes = await fetch(`/.netlify/functions/tvmaze/lookup/shows?imdb=${item.imdbID}`);
         if (tvmazeRes.ok) {
           const tvmazeData = await tvmazeRes.json();
-          const episodesRes = await fetch(`/api/tvmaze/shows/${tvmazeData.id}/episodes`);
+          const episodesRes = await fetch(`/.netlify/functions/tvmaze/shows/${tvmazeData.id}/episodes`);
           if (episodesRes.ok) {
             const episodesData = await episodesRes.json();
             newItem.episodes = episodesData.length;
@@ -85,13 +85,13 @@ function App() {
       }
     } else if (item.Type === 'anime') {
       try {
-        const animeDetailsRes = await fetch(`/api/jikan/anime/${item.imdbID}`);
+        const animeDetailsRes = await fetch(`/.netlify/functions/jikan/anime/${item.imdbID}`);
         const animeDetailsData = await animeDetailsRes.json();
         const animeData = animeDetailsData.data;
 
         if (animeData) {
           newItem.Runtime = animeData.duration || '24 min per ep';
-          const episodesRes = await fetch(`/api/jikan/anime/${item.imdbID}/episodes`);
+          const episodesRes = await fetch(`/.netlify/functions/jikan/anime/${item.imdbID}/episodes`);
           const episodesData = await episodesRes.json();
           const totalEpisodes = episodesData.pagination?.items?.total;
 
@@ -113,7 +113,7 @@ function App() {
       }
     } else if (item.Type === 'movie') {
       try {
-        const movieDetailsRes = await fetch(`/api/omdb?i=${item.imdbID}`);
+        const movieDetailsRes = await fetch(`/.netlify/functions/omdb?i=${item.imdbID}`);
         const movieDetails = await movieDetailsRes.json();
         if (movieDetails.Response === "True") {
           newItem.Runtime = movieDetails.Runtime;
