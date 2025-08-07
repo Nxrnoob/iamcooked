@@ -1,6 +1,5 @@
-// src/components/FloatingTray.tsx
 import type { WatchlistItem, TrayItemProps, FloatingTrayProps } from '../types';
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaTrash, FaMagic } from 'react-icons/fa';
 import styles from '../FloatingTray.module.css';
@@ -12,12 +11,31 @@ const formatTime = (totalMinutes: number) => {
   return `${hours}h ${minutes}m`;
 };
 
-const TrayItem: React.FC<TrayItemProps> = ({ item, onRemove, onUpdateEpisodes }) => {
+const TrayItem: React.FC<TrayItemProps> = ({ item, onRemove, onUpdateEpisodes, onUpdateTotalEpisodes }) => {
+  const [isEditingTotal, setIsEditingTotal] = useState(false);
   const maxEpisodes = item.episodes || 1;
 
   const handleEpisodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCount = parseInt(e.target.value, 10);
     onUpdateEpisodes(item.id, newCount);
+  };
+
+  const handleTotalEpisodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const newTotal = parseInt(e.currentTarget.value, 10);
+      if (!isNaN(newTotal) && newTotal > 0) {
+        onUpdateTotalEpisodes(item.id, newTotal);
+      }
+      setIsEditingTotal(false);
+    }
+  };
+
+  const handleTotalEpisodeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const newTotal = parseInt(e.currentTarget.value, 10);
+    if (!isNaN(newTotal) && newTotal > 0) {
+      onUpdateTotalEpisodes(item.id, newTotal);
+    }
+    setIsEditingTotal(false);
   };
 
   const handleSetMax = () => {
@@ -42,12 +60,24 @@ const TrayItem: React.FC<TrayItemProps> = ({ item, onRemove, onUpdateEpisodes })
           <input
             type="number"
             min="1"
-            max={maxEpisodes}
-            value={item.watched_episodes || 1}
+            value={item.watched_episodes || ''}
             onChange={handleEpisodeChange}
             className={styles.episodeInput}
           />
-          <span className={styles.episodeMax}>/ {maxEpisodes}</span>
+          {isEditingTotal ? (
+            <input
+              type="number"
+              defaultValue={maxEpisodes}
+              onKeyDown={handleTotalEpisodeKeyDown}
+              onBlur={handleTotalEpisodeBlur}
+              className={styles.episodeMaxInput}
+              autoFocus
+            />
+          ) : (
+            <span className={styles.episodeMax} onClick={() => setIsEditingTotal(true)}>
+              / {maxEpisodes}
+            </span>
+          )}
           <button onClick={handleSetMax} className={styles.maxButton}>MAX</button>
         </div>
       </div>
@@ -58,7 +88,7 @@ const TrayItem: React.FC<TrayItemProps> = ({ item, onRemove, onUpdateEpisodes })
   );
 };
 
-const FloatingTray: React.FC<FloatingTrayProps> = ({ items, onRemove, onUpdateEpisodes, totalTime, onGenerateClick, onClose, onClearAll }) => {
+const FloatingTray: React.FC<FloatingTrayProps> = ({ items, onRemove, onUpdateEpisodes, onUpdateTotalEpisodes, totalTime, onGenerateClick, onClose, onClearAll }) => {
   const trayVariants = {
     hidden: { x: '100%' },
     visible: { x: '0%', transition: { type: 'spring', stiffness: 300, damping: 30, when: "beforeChildren" } },
@@ -97,6 +127,7 @@ const FloatingTray: React.FC<FloatingTrayProps> = ({ items, onRemove, onUpdateEp
                 item={item}
                 onRemove={onRemove}
                 onUpdateEpisodes={onUpdateEpisodes}
+                onUpdateTotalEpisodes={onUpdateTotalEpisodes}
               />
             ))
           ) : (

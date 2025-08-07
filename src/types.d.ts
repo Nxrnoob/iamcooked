@@ -59,6 +59,7 @@ interface TrayItemProps {
   item: WatchlistItem;
   onRemove: (id: string) => void;
   onUpdateEpisodes: (id: string, newCount: number) => void;
+  onUpdateTotalEpisodes: (id: string, newTotal: number) => void;
 }
 
 
@@ -66,6 +67,7 @@ interface FloatingTrayProps {
   items: WatchlistItem[];
   onRemove: (id: string) => void;
   onUpdateEpisodes: (id: string, watched_episodes: number) => void;
+  onUpdateTotalEpisodes: (id: string, newTotal: number) => void;
   totalTime: number;
   onGenerateClick: () => void;
   onClose: () => void;

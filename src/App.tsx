@@ -230,6 +230,11 @@ function App() {
                 item.id === id ? { ...item, watched_episodes: newCount } : item
               ));
             }}
+            onUpdateTotalEpisodes={(id, newTotal) => {
+              setSelectedItems(items => items.map(item =>
+                item.id === id ? { ...item, episodes: newTotal } : item
+              ));
+            }}
             onGenerateClick={handleSharePage}
             onClose={() => setIsTrayOpen(false)}
             onClearAll={() => setSelectedItems([])}
