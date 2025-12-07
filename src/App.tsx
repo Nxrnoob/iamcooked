@@ -157,42 +157,64 @@ function App() {
     if (!cardElement) return;
     setIsGenerating(true);
 
-    // Clone and position fixed (better for html2canvas capture)
+    // Clone and position fixed
     const clonedCard = cardElement.cloneNode(true) as HTMLElement;
     clonedCard.style.position = 'fixed';
     clonedCard.style.left = '0';
     clonedCard.style.top = '0';
     clonedCard.style.zIndex = '-9999';
-    clonedCard.style.width = `${cardElement.offsetWidth}px`; // Enforce width
+    clonedCard.style.width = `${cardElement.offsetWidth}px`;
     document.body.appendChild(clonedCard);
 
     try {
       if (bgImage) {
-        // Pre-load background image to avoid CORS/loading issues during capture
         try {
-          const response = await fetch(bgImage);
+          // Use a CORS proxy to ensure we can get the image data
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(bgImage)}`;
+          const response = await fetch(proxyUrl);
+          if (!response.ok) throw new Error('Network response was not ok');
+
           const blob = await response.blob();
           const dataUrl = await new Promise<string>(resolve => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
           });
-          const backgroundElement = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
-          if (backgroundElement) {
-            backgroundElement.style.backgroundImage = `url(${dataUrl})`;
+
+          // Use an img tag instead of background-image for better html2canvas support
+          const backgroundContainer = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
+          if (backgroundContainer) {
+            backgroundContainer.style.backgroundImage = 'none'; // Clear CSS background
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.position = 'absolute';
+            img.style.top = '0';
+            img.style.left = '0';
+            img.style.zIndex = '0'; // Ensure it's behind content
+            backgroundContainer.appendChild(img);
           }
-          // Give it a moment to render the background
+          // Give it a moment to render
           await new Promise(resolve => setTimeout(resolve, 500));
         } catch (err) {
-          console.warn("Failed to preload background image:", err);
+          console.warn("Failed to load background image via proxy:", err);
+          // If loading fails, remove the background to prevent taint/CORS issues
+          const backgroundElement = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
+          if (backgroundElement) {
+            backgroundElement.style.backgroundImage = 'none';
+            backgroundElement.style.backgroundColor = '#14141c'; // Fallback color
+          }
         }
       }
 
       const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(clonedCard, {
-        scale: isMobile ? 1.5 : 2, // Lower scale on mobile to prevent memory crashes
+        scale: isMobile ? 1.5 : 2,
         useCORS: true,
-        backgroundColor: null,
+        allowTaint: false, // strictly disallow taint
+        backgroundColor: '#14141c', // Ensure background isn't transparent
         scrollX: 0,
         scrollY: 0,
         logging: false,
