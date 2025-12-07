@@ -180,15 +180,22 @@ function App() {
         scale: 2,
         useCORS: true,
         backgroundColor: null,
-        allowTaint: true,
       });
-      const dataURL = canvas.toDataURL("image/png");
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = 'iamcooked-card.png';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          console.error("Canvas to Blob conversion failed");
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'iamcooked-card.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
     } catch (error) {
       console.error("Failed to generate image:", error);
     } finally {
