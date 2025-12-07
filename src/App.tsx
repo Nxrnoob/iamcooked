@@ -156,48 +156,66 @@ function App() {
     const cardElement = cardRef.current;
     if (!cardElement) return;
     setIsGenerating(true);
+
+    // Clone and position fixed (better for html2canvas capture)
     const clonedCard = cardElement.cloneNode(true) as HTMLElement;
-    clonedCard.style.position = 'absolute';
-    clonedCard.style.left = '-9999px';
-    clonedCard.style.top = '0px';
+    clonedCard.style.position = 'fixed';
+    clonedCard.style.left = '0';
+    clonedCard.style.top = '0';
+    clonedCard.style.zIndex = '-9999';
+    clonedCard.style.width = `${cardElement.offsetWidth}px`; // Enforce width
     document.body.appendChild(clonedCard);
+
     try {
       if (bgImage) {
-        const response = await fetch(bgImage);
-        const blob = await response.blob();
-        const dataUrl = await new Promise<string>(resolve => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-        const backgroundElement = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
-        if (backgroundElement) {
-          backgroundElement.style.backgroundImage = `url(${dataUrl})`;
+        // Pre-load background image to avoid CORS/loading issues during capture
+        try {
+          const response = await fetch(bgImage);
+          const blob = await response.blob();
+          const dataUrl = await new Promise<string>(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          const backgroundElement = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
+          if (backgroundElement) {
+            backgroundElement.style.backgroundImage = `url(${dataUrl})`;
+          }
+          // Give it a moment to render the background
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (err) {
+          console.warn("Failed to preload background image:", err);
         }
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
+
+      const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(clonedCard, {
-        scale: 2,
+        scale: isMobile ? 1.5 : 2, // Lower scale on mobile to prevent memory crashes
         useCORS: true,
         backgroundColor: null,
+        scrollX: 0,
+        scrollY: 0,
+        logging: false,
       });
-      
+
       canvas.toBlob((blob) => {
         if (!blob) {
-          console.error("Canvas to Blob conversion failed");
-          return;
+          throw new Error("Canvas to Blob conversion failed");
         }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'iamcooked-card.png';
+        link.download = `iamcooked-${Date.now()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+
+        // Clean up URL after a delay to ensure download starts
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/png', 0.9); // 0.9 quality
     } catch (error) {
       console.error("Failed to generate image:", error);
+      alert("Failed to generate image. Please try again.");
     } finally {
       document.body.removeChild(clonedCard);
       setIsGenerating(false);
@@ -223,10 +241,10 @@ function App() {
   return (
     <div className={`${styles.app} ${isTrayOpen ? styles.trayVisible : ''}`}>
       <NavBar onMenuClick={() => setIsMenuOpen(!isMenuOpen)} />
-      
+
       <AnimatePresence>
         {isMenuOpen && <Menu key="menu" onClose={() => setIsMenuOpen(false)} />}
-        
+
         {isTrayOpen && (
           <FloatingTray
             key="tray"
