@@ -182,52 +182,66 @@ function App() {
     if (!cardElement) return;
     setIsGenerating(true);
 
-    // Create a container for the cloned card to hide it from view but keep it renderable
+    // Create a container for the cloned card
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.left = '0';
     container.style.top = '0';
     container.style.width = '100%';
     container.style.height = '100%';
-    container.style.zIndex = '-9999'; // Behind everything
-    container.style.overflow = 'hidden'; // Prevent scrollbars
-    // We cannot use visibility: hidden or display: none as html2canvas won't render it.
-    // We rely on z-index and the app's opaque background to hide it.
+    container.style.zIndex = '-9999';
+    container.style.overflow = 'hidden';
     document.body.appendChild(container);
 
     const clonedCard = cardElement.cloneNode(true) as HTMLElement;
-    // Reset position for the clone within the container
     clonedCard.style.position = 'absolute';
     clonedCard.style.left = '0';
     clonedCard.style.top = '0';
-    clonedCard.style.transform = 'none'; // Remove any scaling from preview
+    clonedCard.style.transform = 'none';
     clonedCard.style.margin = '0';
     container.appendChild(clonedCard);
 
     try {
-      // Use the pre-fetched proxy URL if available, otherwise fallback to original (might taint)
-      const bgUrl = proxyBgUrl || bgImage;
+      let finalBgUrl = proxyBgUrl;
 
-      if (bgUrl) {
-        const backgroundContainer = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
-        if (backgroundContainer) {
-          backgroundContainer.style.backgroundImage = 'none';
+      // If not pre-fetched yet, try to fetch now
+      if (!finalBgUrl && bgImage) {
+        try {
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(bgImage)}`;
+          const response = await fetch(proxyUrl);
+          if (!response.ok) throw new Error('Network response was not ok');
+          const blob = await response.blob();
+          finalBgUrl = URL.createObjectURL(blob);
+        } catch (err) {
+          console.warn("Failed to fetch background image on demand:", err);
+          // Fallback to solid color, DO NOT use bgImage as it will taint canvas
+          finalBgUrl = null;
+        }
+      }
+
+      const backgroundContainer = clonedCard.querySelector('.iamcooked-share-card-background') as HTMLElement;
+      if (backgroundContainer) {
+        backgroundContainer.style.backgroundImage = 'none';
+
+        if (finalBgUrl) {
           const img = document.createElement('img');
-          img.src = bgUrl;
+          img.src = finalBgUrl;
           img.style.width = '100%';
           img.style.height = '100%';
           img.style.objectFit = 'cover';
           img.style.position = 'absolute';
           img.style.top = '0';
           img.style.left = '0';
-          // Apply the blur and brightness filters directly to the image
           img.style.filter = 'blur(4px) brightness(0.6)';
-          img.style.transform = 'scale(1.05)'; // Match the CSS scale
+          img.style.transform = 'scale(1.05)';
           img.style.zIndex = '0';
           backgroundContainer.appendChild(img);
 
-          // Small delay to ensure image renders in DOM
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Wait for image to load/render
+          await new Promise(resolve => setTimeout(resolve, 200));
+        } else {
+          // Safe fallback
+          backgroundContainer.style.backgroundColor = '#14141c';
         }
       }
 
@@ -254,6 +268,10 @@ function App() {
         link.click();
         document.body.removeChild(link);
 
+        // Clean up the on-demand URL if we created one (and it wasn't the state one)
+        if (finalBgUrl && finalBgUrl !== proxyBgUrl) {
+          setTimeout(() => URL.revokeObjectURL(finalBgUrl!), 1000);
+        }
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }, 'image/png', 0.9);
     } catch (error) {
